@@ -1,7 +1,7 @@
 const { Engine, Render, World, Bodies, Runner } = Matter;
 
 var windowWidth = window.innerWidth;
-var windowHeight = window.innerHeight;  
+var windowHeight = window.innerHeight;
 let canvas, engine, world, runner;
 let levels;
 let currentLevel = 0;
@@ -37,7 +37,6 @@ function setup() {
   loadLevel(levels[currentLevel]);
 }
 
-
 function keyPressed() {
   if (key === "ArrowRight") {
     if (!levels[currentLevel + 1]) return;
@@ -45,6 +44,7 @@ function keyPressed() {
     boxes = [];
     winner = null;
     loadLevel(levels[currentLevel]);
+    turn = player;
   }
   if (key === "ArrowLeft") {
     if (!levels[currentLevel - 1]) return;
@@ -52,26 +52,30 @@ function keyPressed() {
     boxes = [];
     winner = null;
     loadLevel(levels[currentLevel]);
-    }
-    if (keyCode === 82) { // 'r' key
+    turn = player;
+  }
+  if (keyCode === 82) {
+    // 'r' key
     boxes = [];
     winner = null;
     loadLevel(levels[currentLevel]);
-    }
-    if (keyCode === 70) { // 'f' key
+    turn = player;
+  }
+  if (keyCode === 70) {
+    // 'f' key
     fullscreen(!fullscreen());
-    }
   }
+}
 
-  function windowResized() {
-    resizeCanvas(windowWidth - 8, windowHeight - 20);
-  }
+function windowResized() {
+  resizeCanvas(windowWidth - 8, windowHeight - 20);
+}
 
 function draw() {
   background("#e4e3de");
   textSize(32);
   noStroke();
-  cursor("none");
+  cursor(CROSS);
   trailCoords.push([mouseX, mouseY]);
 
   if (winner !== null) {
@@ -161,8 +165,6 @@ function mousePressed() {
       setTimeout(() => {
         applyMoveRealWorld(bestMoveIndex);
       }, 1000);
-
-      
 
       break;
     }
