@@ -1,0 +1,17 @@
+{
+  "name": "hackenbush",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx vite",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/matter-js": "^0.19.8",
+    "@types/p5": "^1.7.6",
+    "vite": "^6.0.9"
+  }
+}
