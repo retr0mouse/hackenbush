@@ -1,8 +1,8 @@
 class Box {
   constructor(x, y, box, parent = null) {
     const options = {
-      isStatic: true,
-      angle: box.angleDeg * PI / 180,
+      isSleeping: true,
+      angle: (box.angleDeg * PI) / 180,
     };
     this.x = x;
     this.y = y;
@@ -11,8 +11,8 @@ class Box {
     this.parent = parent;
     this.isRoot = !parent;
     this.endCoords = [
-      x + Math.sin(box.angleDeg * PI / 180) * 50,
-      y - Math.cos(box.angleDeg * PI / 180) * 50
+      x + Math.sin((box.angleDeg * PI) / 180) * 50,
+      y - Math.cos((box.angleDeg * PI) / 180) * 50,
     ];
     this.children = [];
     this.color = box.color;
@@ -29,7 +29,11 @@ class Box {
     angleMode(RADIANS);
     rectMode(CENTER);
     noStroke();
-    fill(this.color === "red" ? "#a02f1f" : "#275d71");
+    if (this.body.isSleeping) {
+      fill(this.color === "red" ? "#a02f1f" : "#275d71");
+    } else {
+      fill(this.color === "red" ? "#833a2b" : "#213b48");
+    }
     rect(0, 0, this.w, this.h, 10);
     pop();
   }

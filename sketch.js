@@ -1,11 +1,12 @@
-const { Engine, Render, World, Bodies, Runner } = Matter;
+const { Engine, Render, World, Bodies, Runner, Composite, Constraint } = Matter;
 
 var windowWidth = window.innerWidth;
 var windowHeight = window.innerHeight;
 let canvas, engine, world, runner;
 let levels;
 let currentLevel = 0;
-let boxes = [];
+let chainedBoxes = [];
+let unchainedBoxes = [];
 let ground;
 let trailCoords = [];
 let a = 0;
@@ -41,7 +42,8 @@ function keyPressed() {
   if (key === "ArrowRight") {
     if (!levels[currentLevel + 1]) return;
     currentLevel++;
-    boxes = [];
+    chainedBoxes = [];
+    unchainedBoxes = [];
     winner = null;
     loadLevel(levels[currentLevel]);
     turn = player;
@@ -49,14 +51,16 @@ function keyPressed() {
   if (key === "ArrowLeft") {
     if (!levels[currentLevel - 1]) return;
     currentLevel--;
-    boxes = [];
+    chainedBoxes = [];
+    unchainedBoxes = [];
     winner = null;
     loadLevel(levels[currentLevel]);
     turn = player;
   }
   if (keyCode === 82) {
     // 'r' key
-    boxes = [];
+    chainedBoxes = [];
+    unchainedBoxes = [];
     winner = null;
     loadLevel(levels[currentLevel]);
     turn = player;
@@ -94,8 +98,12 @@ function draw() {
   textSize(16);
   text("Press 'r' to restart, arrow keys - to cycle through levels", 10, 120);
 
-  for (let i = 0; i < boxes.length; i++) {
-    boxes[i].show();
+  for (let i = 0; i < chainedBoxes.length; i++) {
+    chainedBoxes[i].show();
+  }
+
+  for (let i = 0; i < unchainedBoxes.length; i++) {
+    unchainedBoxes[i].show();
   }
 
   for (let i = 0; i < trailCoords.length; i++) {
@@ -130,7 +138,7 @@ function loadLevel(level) {
 
     const newBox = new Box(coords[0], coords[1], boxData);
     newBox.parent = parent || null;
-    boxes.push(newBox);
+    chainedBoxes.push(newBox);
 
     if (parent) {
       parent.children.push(newBox);
@@ -147,15 +155,15 @@ function loadLevel(level) {
 
 function mousePressed() {
   if (turn !== player) return;
-  for (let i = 0; i < boxes.length; i++) {
-    const b = boxes[i];
+  for (let i = 0; i < chainedBoxes.length; i++) {
+    const b = chainedBoxes[i];
     if (
       b.isUnderMouse(mouseX, mouseY) &&
       b.color === (turn === Players.RED ? "red" : "blue")
     ) {
       applyMoveRealWorld(i);
 
-      let logicState = buildLogicState(boxes);
+      let logicState = buildLogicState(chainedBoxes);
       let bestMoveIndex = findBestMove(logicState, ai);
 
       if (bestMoveIndex === null) {
@@ -172,8 +180,9 @@ function mousePressed() {
 }
 
 function applyMoveRealWorld(index) {
-  let removed = boxes.splice(index, 1)[0];
-  World.remove(world, removed.body);
+  const removed = chainedBoxes.splice(index, 1)[0];
+  unchainedBoxes.push(removed);
+  removed.body.isSleeping = false;
 
   if (removed.parent) {
     let idx = removed.parent.children.indexOf(removed);
@@ -184,23 +193,24 @@ function applyMoveRealWorld(index) {
 
   removeFloatingBoxesRealWorld();
   turn = turn === Players.RED ? Players.BLUE : Players.RED;
-  if (boxes.length === 0) {
-    winner = turn;
+  if (chainedBoxes.length === 0) {
+    winner = turn === Players.RED ? Players.BLUE : Players.RED;
   }
 }
 
 function removeFloatingBoxesRealWorld() {
   const visited = new Set();
-  for (let b of boxes) {
+  for (let b of chainedBoxes) {
     if (!b.parent && b.isRoot) {
       dfsMark(b, visited);
     }
   }
-  for (let i = boxes.length - 1; i >= 0; i--) {
-    const b = boxes[i];
+  for (let i = chainedBoxes.length - 1; i >= 0; i--) {
+    const b = chainedBoxes[i];
     if (!visited.has(b)) {
-      World.remove(world, b.body);
-      boxes.splice(i, 1);
+      const removed = chainedBoxes.splice(i, 1)[0];
+      unchainedBoxes.push(removed);
+      removed.body.isSleeping = false;
     }
   }
 }
