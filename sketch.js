@@ -28,6 +28,7 @@ function preload() {
 function setup() {
   canvas = createCanvas(windowWidth, windowHeight - 5);
   engine = Engine.create();
+  engine.gravity.y = -1;
   world = engine.world;
   runner = Runner.create();
   Runner.run(runner, engine);
@@ -38,32 +39,29 @@ function setup() {
   loadLevel(levels[currentLevel]);
 }
 
+function reset() {
+  chainedBoxes = [];
+  unchainedBoxes = [];
+  World.clear(world, true);
+  winner = null;
+  loadLevel(levels[currentLevel]);
+  turn = player;
+}
+
 function keyPressed() {
   if (key === "ArrowRight") {
     if (!levels[currentLevel + 1]) return;
     currentLevel++;
-    chainedBoxes = [];
-    unchainedBoxes = [];
-    winner = null;
-    loadLevel(levels[currentLevel]);
-    turn = player;
+    reset();
   }
   if (key === "ArrowLeft") {
     if (!levels[currentLevel - 1]) return;
     currentLevel--;
-    chainedBoxes = [];
-    unchainedBoxes = [];
-    winner = null;
-    loadLevel(levels[currentLevel]);
-    turn = player;
+    reset();
   }
   if (keyCode === 82) {
     // 'r' key
-    chainedBoxes = [];
-    unchainedBoxes = [];
-    winner = null;
-    loadLevel(levels[currentLevel]);
-    turn = player;
+    reset();
   }
   if (keyCode === 70) {
     // 'f' key
@@ -84,13 +82,18 @@ function draw() {
 
   if (winner !== null) {
     fill("black");
-    text(`Game over, ${winner === Players.RED ? "Red" : "Blue"} won`, 10, 40);
+    textAlign(TOP, CENTER);
+    text(
+      `Game over, ${winner === Players.RED ? "Red" : "Blue"} won`,
+      width / 2 - textSize() * 4,
+      40
+    );
   } else if (turn === Players.RED) {
     fill("#943827");
-    text("Red's turn", 10, 40);
+    text("Red's turn", width / 2 - textSize() * 2, 40);
   } else {
     fill("#4a84a1");
-    text("Blue's turn", 10, 40);
+    text("Blue's turn", width / 2 - textSize() * 2, 40);
   }
 
   fill("black");
