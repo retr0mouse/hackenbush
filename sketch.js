@@ -71,6 +71,7 @@ function keyPressed() {
 
 function windowResized() {
   resizeCanvas(windowWidth - 8, windowHeight - 20);
+  reset();
 }
 
 function draw() {
